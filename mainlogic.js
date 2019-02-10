@@ -1,9 +1,13 @@
+//---------------------------	Variable INIT-----------------------------------
 var canvas;
 var context;
 var winner;
 var height=0;
 var width=0;
 var speed = 0;
+var gameScore = 0;
+var gameDebug = false;
+//Linked list data structure represents one square of snake's body
 var node = {
 			x:0,
 			y:0,
@@ -12,6 +16,7 @@ var node = {
 			color:'#6bf2f9',
 			next:null
 };
+
 var head = null;
 var tail = null;
 
@@ -26,13 +31,11 @@ var button = {
     x:0,
     y:0,
     width:220,
-    height:50	
+    height:50
 };
 var changeDirection = {x:0,y:0};
 var direction = 1;
 var snakeLenght = 0;
-window.onload = start
-
 var keyDownTime = 0;
 var keyUpTime = 0;
 var lock = {
@@ -41,9 +44,13 @@ var lock = {
 }
 var pause = false;
 var gameOver = false;
+var fps = 1000/60; // Frames per Second
+var initialLength = 2;
+window.onload = start
 
-
-function start() // start function which is called as soon as the window is loaded used to initlize variables and calls the main function
+// start function which is called as soon as
+//the window is loaded used to initlize variables and calls the main function
+function start()
 {
 	canvas = document.getElementById('game');
 	context = canvas.getContext('2d');
@@ -62,12 +69,11 @@ function start() // start function which is called as soon as the window is load
 	button.y = height/2+25;
 	// console.log('position of head-x:'+head.x+'y: '+head.y);
 	// console.log('position of next node x'+head.next.x+'y: '+head.next.y);
-	
-	 	setInterval(main,1000/60);
-	//setInterval(main,3000);	
+
+	 	setInterval(main,fps);
 }
 function main() // main function where all the games mechanics work
-{	
+{
 
 	document.addEventListener("keydown",controller);
 
@@ -80,14 +86,14 @@ function main() // main function where all the games mechanics work
 		temp = copyNode(head);
 		temp.color = 'black'; // GIVING HE HEAD OF THE SNAKE COLOR BLACK
 		while(temp !=null) // DRAWING THE BODY OF THE SNAKE
-		{	
+		{
 			drawNode(temp.x,temp.y,temp.l,temp.w,temp.color);
 			temp = temp.next;
 		}
 		speed++;
 		eatApple(); // COLLSISION DETECTION CODE
 		if(speed%4==0){
-			moveSnake(head);	
+			moveSnake(head);
 		}
 	}
 	else
@@ -105,22 +111,22 @@ function drawGrid()
 		}
 	}
 }
-function copyNode(temp) // function to copy one node to another
+function copyNode(snakeNode) // function to copy one node to another
 {
-	if(temp ==null)
+	if(snakeNode ==null)
 		return null;
 	returnNode = new Object();
-	returnNode.x = temp.x;
-	returnNode.y = temp.y;
-	returnNode.color = temp.color;
-	returnNode.l = temp.l;
-	returnNode.w = temp.w;
-	returnNode.next = temp.next;
+	returnNode.x = snakeNode.x;
+	returnNode.y = snakeNode.y;
+	returnNode.color = snakeNode.color;
+	returnNode.l = snakeNode.l;
+	returnNode.w = snakeNode.w;
+	returnNode.next = snakeNode.next;
 
 	return returnNode;
 }
-
-function drawRect(x,y,h,w,color) // Function to draw rectangle
+// Function to draw rectangle canvas
+function drawRect(x,y,h,w,color)
 {
 	context.beginPath();
 	context.style = color;
@@ -129,8 +135,8 @@ function drawRect(x,y,h,w,color) // Function to draw rectangle
 	context.fill();
 	context.closePath();
 }
-
-function drawNode(x,y,h,w,color) // Function to draw the body of  the snake
+// Function to draw the body of  the snake
+function drawNode(x,y,h,w,color)
 {
 	context.beginPath();
 	context.style = color;
@@ -143,6 +149,8 @@ function drawNode(x,y,h,w,color) // Function to draw the body of  the snake
 
 	context.closePath();
 }
+
+//Function to draw circle canvas
 function drawCircle(x,y,radius,color)
 {
 	context.beginPath();
@@ -151,7 +159,9 @@ function drawCircle(x,y,radius,color)
 	context.fill();
 	context.closePath();
 }
-function moveSnake() // Incrementing the value of X and Y of the all the nodes present in the snake
+
+// Incrementing the value of X and Y of the all the nodes present in the snake
+function moveSnake()
 {
 
 	var tempHead = copyNode(head);
@@ -160,7 +170,7 @@ function moveSnake() // Incrementing the value of X and Y of the all the nodes p
 		head.x +=node.w;
 	}
 	if (direction ==2) // if tail is going left
-	{	
+	{
 		head.x -=node.w;
 	}
 	if (direction ==3) // if tail is going UP
@@ -183,14 +193,14 @@ function moveSnake() // Incrementing the value of X and Y of the all the nodes p
 	}
 	temp = head.next;
 	while(temp !=null) // SNAKE'S BODY FOLLOWING THE HEAD POSITION
-	{	
+	{
 		//console.log(temp);
 		var previous = copyNode(temp);
 		temp.x = tempHead.x
 		temp.y = tempHead.y;
-		tempHead = previous; 
+		tempHead = previous;
 		temp = temp.next;
-		
+
 	}
 	if(head.x<0) // LEFT BOUNDARY CONDITION
 	{
@@ -224,52 +234,32 @@ function moveSnake() // Incrementing the value of X and Y of the all the nodes p
 	}
 
 }
-function addNode(temp) // FUNCTIN TO ADD A NEW NODE INTO SNAKE'S BODY
+function addNode(snakeNode) // Function TO ADD A NEW NODE INTO SNAKE'S BODY
 {
 	previous = null;
-	while(temp !=null)
+	while(snakeNode !=null)
 	{
-		previous = temp;
-		temp = temp.next;
+		previous = snakeNode;
+		snakeNode = snakeNode.next;
 	}
 	tt = copyNode(previous);
 	tt.x -=node.w;
 	previous.next = tt;
 }
-function findLength(temp) // FUNCTION TO FIND THE LENGTH OF THE SNAKE
+
+function findLength(snakeNode) // FUNCTION TO FIND THE LENGTH OF THE SNAKE
 {
 	counter = 0;
-	while(temp !=null)
+	while(snakeNode !=null)
 	{
-		temp = temp.next;
+		snakeNode = snakeNode.next;
 		counter +=1;
 	}
-	console.log(counter);
+	if(gameDebug){
+		console.log(counter);
+	}
+
 }
-function some(event)
-{
-	console.log('hello world');
-}
-// function keyDown(event)
-// {
-// 	if(lock.key ==0)
-// 	{
-// 	var key = event.keyCode;
-// 	lock.key = key;
-// 	lock.status = true;
-// 	controller(event);
-// 	}
-// 	if(lock.key==event.keyCode)
-// 	{
-// 		controller(event);	
-// 	}
-// }
-// function keyUp(event)
-// {
-// 	if(lock.key == event.keyCode)
-// 		lock.key=0;
-// 	//controller(event);
-// }
 
 function controller(event) // CONTROLLER FUNCTION
 {
@@ -277,17 +267,17 @@ function controller(event) // CONTROLLER FUNCTION
 	//console.log(lock.status);
 	// if(lock.key != event.keyCode)
 	// 	return 0;
-	 var key = event.keyCode;
-
-	console.log(key);
-
+	var key = event.keyCode;
+	if(gameDebug){
+		console.log(key);
+	}
 	switch(key)
 	{
 		case 38:
 				if(direction !=4)
 					direction = 3; // DOWN KEY PRESSED
 				break;
-		case 40: 
+		case 40:
 				if(direction !=3)
 					direction  = 4; //UP KEY PRESSED
 				break;
@@ -311,7 +301,10 @@ function controller(event) // CONTROLLER FUNCTION
 				break;
 		case 80:
 				pause = !pause;
-				console.log(pause);
+				if(gameDebug){
+					console.log(pause);
+				}
+
 
 	}
 }
@@ -327,15 +320,19 @@ function eatApple()
 	var hY = head.y/15;
 	if(aX == hX && aY ==hY)
 	{
-	
 		apple.x = Math.floor(getRandomInt(10,width-10)/15)*15;
 		apple.y = Math.floor(getRandomInt(10,height-10)/15)*15;
 		addNode(head);
 		winner +=1;
+		gameScore +=1;
 	}
+
+	document.getElementById('score').innerHTML = gameScore;
 }
-function endGame()
-{
+
+//drawing end game message
+function endGame(){
+
 	drawRect(0,0,height,width,'#000000');
 	context.font = "30px Comic Sans MS";
 	context.textAlign = "center";
@@ -348,20 +345,16 @@ function endGame()
 	context.fillText("PRESS F5 to play again",(button.x+button.width/2),(button.y+button.height/2));
 	canvas.addEventListener('click', function(evt) {
     var mousePos = getMousePos(canvas, evt);
-
     if (isInside(mousePos,button)) {
     	if(counter ==0)
         	gameOver=false;
         	start();
         	counter =1;
-    }else{
-        
-    }   
-}, false);
+    	}else{
+    	}
+		}, false);
 
 }
-
-
 function getMousePos(canvas, event) {
     var rect = canvas.getBoundingClientRect();
     return {
@@ -370,6 +363,7 @@ function getMousePos(canvas, event) {
     };
 }
 
+// function to check if the mouse is inside rectangle
 function isInside(pos, rect){
     return pos.x > rect.x && pos.x < rect.x+rect.width && pos.y < rect.y+rect.height && pos.y > rect.y
 }
